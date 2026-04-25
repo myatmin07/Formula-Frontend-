@@ -1,0 +1,319 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Formula-X Hub</title>
+    <!-- Telegram Web App JS -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Configuration for Cyber Neon Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'fx-bg': '#070b14',        /* Deep Abyssal Navy */
+                        'fx-card': '#0e172a',      /* Dark Navy Card */
+                        'fx-card-hover': '#162440',/* Hover State */
+                        'fx-border': '#223861',    /* Subtle Border */
+                        'fx-cyan': '#00e5ff',      /* Electric Cyan (Primary Accent) */
+                        'fx-cyan-muted': '#0097a7',
+                        'fx-pink': '#ff007f',      /* Neon Pink (Secondary Accent) */
+                        'fx-purple': '#8a2be2',    /* Deep Purple */
+                        'fx-text': '#f8fafc',      /* White */
+                        'fx-text-muted': '#94a3b8' /* Muted Blue-Gray */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #070b14;
+            color: #f8fafc;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 0px; display: none; }
+        
+        /* Active Tab with Cyan Glow */
+        .active-tab {
+            border-color: #00e5ff !important;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+            background-color: rgba(0, 229, 255, 0.05) !important;
+        }
+
+        /* Sidebar Transition */
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #overlay { transition: opacity 0.3s ease-in-out; }
+
+        /* Progress Bar */
+        .progress-bar { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Rank Colors */
+        .rank-1 { background: #00e5ff; color: #070b14; box-shadow: 0 0 15px rgba(0,229,255,0.5); }
+        .rank-2 { background: #8a2be2; color: #FFF; box-shadow: 0 0 15px rgba(138,43,226,0.4); }
+        .rank-3 { background: #ff007f; color: #FFF; box-shadow: 0 0 15px rgba(255,0,127,0.4); }
+        .rank-other { background: #0e172a; color: #f8fafc; border: 1px solid #223861; }
+    </style>
+</head>
+<body class="bg-fx-bg text-fx-text h-screen flex flex-col font-sans">
+
+    <!-- App Header -->
+    <header class="flex items-center justify-between px-4 py-3 bg-fx-bg border-b border-fx-border sticky top-0 z-40 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleMenu()" class="p-2 rounded-lg bg-fx-card border border-fx-border text-fx-cyan hover:bg-fx-card-hover hover:text-fx-pink transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full border border-fx-cyan bg-fx-card flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.4)]">
+                    <span class="text-fx-cyan font-bold text-xs">FX</span>
+                </div>
+                <span class="text-lg font-bold text-fx-text tracking-wide">Formula <span class="text-fx-cyan drop-shadow-[0_0_5px_rgba(0,229,255,0.8)]">X</span></span>
+            </div>
+        </div>
+        <div class="text-fx-cyan text-sm font-medium pr-2 cursor-pointer flex items-center space-x-1">
+            <span id="userNameDisplay">User</span>
+        </div>
+    </header>
+
+    <!-- Sidebar & Overlay -->
+    <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-[#03050a]/80 z-40 opacity-0 pointer-events-none transition-opacity backdrop-blur-sm"></div>
+    
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-fx-bg border-r border-fx-border z-50 transform -translate-x-full flex flex-col shadow-[5px_0_20px_rgba(0,0,0,0.5)]">
+        <div class="p-5 flex justify-between items-center border-b border-fx-border">
+            <h2 class="text-xl font-bold text-fx-text">Menu</h2>
+            <button onclick="toggleMenu()" class="p-1 text-fx-text-muted hover:text-fx-pink rounded-lg border border-fx-border bg-fx-card transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#" onclick="switchView('shop')" id="nav-shop" class="nav-btn block px-4 py-3 rounded-xl bg-fx-card border border-fx-cyan text-fx-cyan transition-all mb-2 shadow-[0_0_10px_rgba(0,229,255,0.2)]">Shop</a>
+            <a href="#" onclick="switchView('profile')" id="nav-profile" class="nav-btn block px-4 py-3 rounded-xl hover:bg-fx-card border border-transparent hover:border-fx-border text-fx-text transition-all">Profile</a>
+            <a href="#" onclick="switchView('orders')" id="nav-orders" class="nav-btn block px-4 py-3 rounded-xl hover:bg-fx-card border border-transparent hover:border-fx-border text-fx-text transition-all">Orders</a>
+            <a href="#" onclick="switchView('leaderboard')" id="nav-leaderboard" class="nav-btn block px-4 py-3 rounded-xl hover:bg-fx-card border border-transparent hover:border-fx-border text-fx-text transition-all">Leaderboard</a>
+            <a href="#" onclick="switchView('checker')" id="nav-checker" class="nav-btn block px-4 py-3 rounded-xl hover:bg-fx-card border border-transparent hover:border-fx-border text-fx-text transition-all mt-4 relative">
+                Outline Key Check
+                <span class="absolute top-3 right-3 w-2 h-2 rounded-full bg-fx-pink shadow-[0_0_5px_#ff007f]"></span>
+            </a>
+            <a href="#" onclick="contactAdmin()" class="block px-4 py-3 rounded-xl hover:bg-fx-card border border-transparent hover:border-fx-border text-fx-text transition-all mt-4">Contact Admin</a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-4 pb-10" id="mainContainer">
+        
+        <!-- ================= SHOP VIEW ================= -->
+        <div id="view-shop" class="space-y-4">
+            
+            <!-- Product Toggle -->
+            <div class="bg-fx-bg rounded-2xl p-0 flex flex-col space-y-3">
+                <!-- Outline Button -->
+                <button id="btn-prod-outline" onclick="selectProduct('outline')" class="py-4 px-5 rounded-2xl flex items-center justify-start space-x-4 border border-fx-cyan active-tab transition bg-fx-card">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-fx-cyan/20 border border-fx-cyan/50 shadow-[0_0_12px_rgba(0,229,255,0.4)]">
+                        <svg class="w-6 h-6 text-fx-cyan" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a10 10 0 0 0 0 20v-20z" opacity="0.8"/>
+                            <path d="M14 3.5a8.5 8.5 0 0 1 0 17v-4a4.5 4.5 0 0 0 0-9v-4z"/>
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-fx-text text-lg tracking-wide">Outline</span>
+                </button>
+                
+                <!-- Hiddify / V2Ray Button -->
+                <button id="btn-prod-hiddify" onclick="selectProduct('hiddify')" class="py-4 px-5 rounded-2xl flex items-center justify-start space-x-4 border border-fx-border hover:bg-fx-card-hover transition bg-fx-card">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-fx-pink/10 border border-fx-pink/30 shadow-[0_0_10px_rgba(255,0,127,0.2)]">
+                        <svg class="w-6 h-6 text-fx-pink" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="4,13 8,11 8,21 4,21" />
+                            <polygon points="10,9 14,7 14,21 10,21" />
+                            <polygon points="16,5 20,3 20,21 16,21" />
+                        </svg>
+                    </div>
+                    <span class="font-medium text-fx-text-muted text-lg tracking-wide transition-colors">Hiddify / V2Ray</span>
+                </button>
+            </div>
+
+            <!-- Server Selection -->
+            <div class="bg-fx-card rounded-2xl p-5 border border-fx-border mt-6 shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
+                <h3 class="text-fx-text-muted mb-4 font-medium text-sm uppercase tracking-wider">Select Server</h3>
+                <div id="server-list" class="flex flex-wrap gap-3">
+                    <!-- Servers injected by JS -->
+                </div>
+                <p id="server-hint" class="text-fx-pink mt-4 text-sm hidden">Select a server to see plans.</p>
+            </div>
+
+            <!-- Plans Selection -->
+            <div id="plan-container" class="hidden">
+                <h3 class="text-fx-text-muted mb-3 font-medium text-sm ml-1 uppercase tracking-wider">Choose Plan</h3>
+                <div id="plan-list" class="space-y-3">
+                    <!-- Plans injected by JS -->
+                </div>
+            </div>
+
+            <!-- Payment & Create Order -->
+            <div id="order-container" class="hidden space-y-4 pt-4">
+                <div class="bg-fx-card rounded-2xl p-5 border border-fx-border flex items-center justify-between shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
+                    <div>
+                        <p class="text-fx-text font-medium"><span class="text-fx-cyan font-bold">KPay</span> 09770088206</p>
+                        <p class="text-fx-text-muted text-sm mt-1">Myat Min Lwin — Note: Payment</p>
+                    </div>
+                </div>
+                
+                <button onclick="createOrder()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-fx-cyan to-[#0097a7] hover:from-[#0097a7] hover:to-fx-cyan text-fx-bg font-bold text-lg transition shadow-[0_0_20px_rgba(0,229,255,0.4)]">
+                    Create Order
+                </button>
+            </div>
+            
+            <div class="h-10"></div> 
+        </div>
+
+        <!-- ================= PROFILE VIEW ================= -->
+        <div id="view-profile" class="hidden space-y-5">
+            <div class="bg-fx-card rounded-2xl p-8 border border-fx-border flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                <!-- Avatar -->
+                <div id="profileAvatar" class="w-24 h-24 rounded-full border-4 border-fx-cyan shadow-[0_0_25px_rgba(0,229,255,0.4)] mb-5 bg-fx-bg flex items-center justify-center text-3xl font-bold text-fx-cyan overflow-hidden relative">
+                    <span id="avatarInitials">FX</span>
+                </div>
+                
+                <h2 id="profileName" class="text-2xl font-bold text-fx-text mb-1">User Name</h2>
+                <p id="profileUsername" class="text-fx-text-muted text-sm mb-5 font-medium">@username</p>
+                
+                <!-- Formula-X Member Pill -->
+                <div class="px-5 py-2 rounded-full border border-fx-pink bg-fx-pink/10 text-fx-pink text-xs font-bold tracking-widest flex items-center shadow-[0_0_10px_rgba(255,0,127,0.2)]">
+                    <span class="mr-2 text-fx-pink">✦</span> Formula-X Member
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h3 class="text-fx-text font-medium text-center text-lg mb-4">Account Overview</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-fx-card rounded-2xl p-6 border border-fx-border border-b-4 border-b-fx-cyan flex flex-col items-center justify-center shadow-md">
+                        <p class="text-[10px] text-fx-text-muted uppercase tracking-widest mb-3 text-center">Completed<br>Orders</p>
+                        <p class="text-3xl font-bold text-fx-text">0</p>
+                    </div>
+                    <div class="bg-fx-card rounded-2xl p-6 border border-fx-border border-b-4 border-b-fx-pink flex flex-col items-center justify-center shadow-md">
+                        <p class="text-[10px] text-fx-text-muted uppercase tracking-widest mb-3 text-center">Total Spent</p>
+                        <p class="text-2xl font-bold text-fx-text text-center leading-tight">0<br><span class="text-xs text-fx-pink mt-1 block">MMK</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ORDERS VIEW ================= -->
+        <div id="view-orders" class="hidden space-y-5">
+            <div class="border-b border-fx-border pb-4">
+                <h2 class="text-2xl font-bold text-fx-cyan mb-2">Order History</h2>
+                <p class="text-sm text-fx-text-muted leading-relaxed">
+                    Track your recent purchases. Exact details and statuses are listed below.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                
+                <!-- Order Card Example 1 -->
+                <div class="bg-fx-card rounded-2xl p-5 border border-fx-border hover:border-fx-cyan transition shadow-sm group">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 bg-fx-cyan/10 text-fx-cyan text-[10px] font-bold rounded border border-fx-cyan/30">CONFIRMED</span>
+                            <span class="text-xs text-fx-text-muted font-medium">May 12, 2026</span>
+                        </div>
+                        <span class="text-xs text-fx-text-muted font-mono">#98241</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h4 class="text-fx-text font-semibold text-base mb-1 group-hover:text-fx-cyan transition-colors">Outline VPN - 100GB</h4>
+                            <p class="text-xs text-fx-text-muted">Singapore Server • 30 Days</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-lg font-bold text-fx-cyan">3,000 <span class="text-xs text-fx-cyan-muted font-normal">MMK</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Card Example 2 -->
+                <div class="bg-fx-card rounded-2xl p-5 border border-fx-border hover:border-fx-cyan transition shadow-sm group">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 bg-fx-cyan/10 text-fx-cyan text-[10px] font-bold rounded border border-fx-cyan/30">CONFIRMED</span>
+                            <span class="text-xs text-fx-text-muted font-medium">April 25, 2026</span>
+                        </div>
+                        <span class="text-xs text-fx-text-muted font-mono">#84729</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h4 class="text-fx-text font-semibold text-base mb-1 group-hover:text-fx-cyan transition-colors">CapCut Team</h4>
+                            <p class="text-xs text-fx-text-muted">Premium Account • 35 Days</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-lg font-bold text-fx-cyan">5,500 <span class="text-xs text-fx-cyan-muted font-normal">MMK</span></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= LEADERBOARD VIEW ================= -->
+        <div id="view-leaderboard" class="hidden space-y-6">
+            <h2 class="text-2xl font-bold text-fx-cyan">Leaderboard</h2>
+            
+            <div class="bg-fx-card rounded-2xl p-5 border border-fx-cyan/30 text-fx-text-muted text-sm text-center leading-relaxed shadow-[0_0_15px_rgba(0,229,255,0.1)]">
+                Top resellers ranked by total exact purchases. <br><span class="text-fx-cyan font-medium mt-1 inline-block">Keep buying, keep climbing!</span>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Rank 1 -->
+                <div class="bg-fx-card rounded-2xl p-4 border border-fx-border flex items-center justify-between hover:border-fx-cyan transition shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 rounded-full rank-1 flex items-center justify-center font-bold text-sm">1</div>
+                        <div>
+                            <h4 class="text-fx-text font-semibold text-sm">Fushi</h4>
+                            <p class="text-xs text-fx-text-muted">@Fushi_Reseller</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-bold text-fx-cyan">158,100 <span class="text-xs text-fx-cyan-muted font-normal">MMK</span></span>
+                        <span class="text-[10px] text-fx-text-muted font-medium">Total Spent</span>
+                    </div>
+                </div>
+
+                <!-- Rank 2 -->
+                <div class="bg-fx-card rounded-2xl p-4 border border-fx-border flex items-center justify-between hover:border-fx-purple transition shadow-sm">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 rounded-full rank-2 flex items-center justify-center font-bold text-sm">2</div>
+                        <div>
+                            <h4 class="text-fx-text font-semibold text-sm">RINN</h4>
+                            <p class="text-xs text-fx-text-muted">@rinn_store</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-bold text-fx-purple">136,600 <span class="text-xs text-fx-text-muted font-normal">MMK</span></span>
+                        <span class="text-[10px] text-fx-text-muted font-medium">Total Spent</span>
+                    </div>
+                </div>
+
+                <!-- Rank 3 -->
+                <div class="bg-fx-card rounded-2xl p-4 border border-fx-border flex items-center justify-between hover:border-fx-pink transition shadow-sm">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 rounded-full rank-3 flex items-center justify-center font-bold text-sm">3</div>
+                        <div>
+                            <h4 class="text-fx-text font-semibold text-sm">Zen</h4>
+                            <p class="text-xs text-fx-text-muted">@Zen_L</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-bold text-fx-pink">70,500 <span class="text-xs text-fx-text-muted font-normal">MMK</span></span>
+                        <span class="text-[10px] text-fx-text-muted font-medium">Total Spent</span>
+                    </div>
+                </div>
+                
+                <!-- Rank 4 -->
+                <div class="bg-fx-bg rounded-2xl p-4 border border-fx-bo
